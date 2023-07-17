@@ -1,0 +1,13 @@
+version: '3.7'
+
+services:
+  postgres-13:
+    image: postgres:13.6-alpine3.15
+    container_name: postgres-isolation
+    restart: unless-stopped
+    ports:
+      - 5442:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=isolation
