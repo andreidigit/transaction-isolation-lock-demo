@@ -5,8 +5,10 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.retry.annotation.EnableRetry;
 
 @SpringBootApplication
+@EnableRetry
 public class IsolationApplication {
 
     public static void main(String[] args) {
@@ -15,6 +17,11 @@ public class IsolationApplication {
 
     @Bean
     public CommandLineRunner setBuddy(BuddyService buddyService) {
-        return args -> buddyService.createBuddy("Ivan");
+        return args -> buddyService.createBuddy("Ivan", 0);
+    }
+
+    @Bean
+    public CommandLineRunner setBuddyV(BuddyService buddyService) {
+        return args -> buddyService.createBuddyV("Ivan", 0);
     }
 }

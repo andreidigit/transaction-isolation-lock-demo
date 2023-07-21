@@ -27,4 +27,59 @@ public class BuddyController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
         }
     }
+
+    @PostMapping("/add-read-committed")
+    public ResponseEntity<String> initAddLikeDefault(@RequestParam("name") String name, @RequestParam("like") int like) {
+        try {
+            buddyService.addLikeToBuddyDefault(name, like);
+            return new ResponseEntity<>("Like successfully added.", HttpStatus.ACCEPTED);
+        } catch (Exception e) {
+            log.warn("ID: {} - Exception in controller:",Thread.currentThread().getId(), e);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+        }
+    }
+
+    @PostMapping("/add-repeatable-read")
+    public ResponseEntity<String> initAddLikeRepeatableRead(@RequestParam("name") String name, @RequestParam("like") int like) {
+        try {
+            buddyService.addLikeToBuddyRepeatableRead(name, like);
+            return new ResponseEntity<>("Like successfully added.", HttpStatus.ACCEPTED);
+        } catch (Exception e) {
+            log.warn("ID: {} - Exception Repeatable Read:",Thread.currentThread().getId());
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+        }
+    }
+
+    @PostMapping("/add-serializable")
+    public ResponseEntity<String> initAddLikeSerializable(@RequestParam("name") String name, @RequestParam("like") int like) {
+        try {
+            buddyService.addLikeToBuddySerializable(name, like);
+            return new ResponseEntity<>("Like successfully added.", HttpStatus.ACCEPTED);
+        } catch (Exception e) {
+            log.warn("ID: {} - Exception in controller:",Thread.currentThread().getId(), e);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+        }
+    }
+
+    @PostMapping("/add-versioned")
+    public ResponseEntity<String> initAddLikeVersioned(@RequestParam("name") String name, @RequestParam("like") int like) {
+        try {
+            buddyService.addLikeToBuddyVersioned(name, like);
+            return new ResponseEntity<>("Like successfully added.", HttpStatus.ACCEPTED);
+        } catch (Exception e) {
+            log.warn("ID: {} - Exception in controller:",Thread.currentThread().getId(), e);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+        }
+    }
+
+    @PostMapping("/add-pessimistic")
+    public ResponseEntity<String> initAddLikePessimistic(@RequestParam("name") String name, @RequestParam("like") int like) {
+        try {
+            buddyService.addLikeToBuddyPessimistic(name, like);
+            return new ResponseEntity<>("Like successfully added.", HttpStatus.ACCEPTED);
+        } catch (Exception e) {
+            log.warn("ID: {} - Exception in controller:",Thread.currentThread().getId(), e);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+        }
+    }
 }
