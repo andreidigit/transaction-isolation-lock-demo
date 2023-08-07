@@ -10,6 +10,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.SQLException;
@@ -122,7 +123,7 @@ public class BuddyService {
     }
 
     @Transactional
-    @Retryable(maxAttempts = 5)
+    @Retryable(maxAttempts = 1)
     public void addLikeToBuddyPessimistic(@NonNull String name, int like) {
         buddyRepo.findByNameIs(name).ifPresentOrElse(
                 body -> {
@@ -132,6 +133,21 @@ public class BuddyService {
                 () -> {
                     log.warn("There is no buddy with Name {}", name);
                     throw new IllegalArgumentException("There is no buddy with Name: " + name);
+                }
+        );
+    }
+
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void addLikeToBuddyOverKafka(@NonNull String name, int like) {
+        buddyRepo.findByNameIs(name).ifPresentOrElse(
+                body -> {
+                    body.setLikes(body.getLikes() + like);
+                    historyService.saveLogHistoryTransactionRequired(like > 0 ? "ADD" : "SUB", name, body.getLikes());
+                },
+                () -> {
+                    log.warn("There is no buddy with Name {}", name);
+                    createBuddy(name, like);
                 }
         );
     }

@@ -39,3 +39,16 @@ Configuration -> Data sources -> Select "Prometheus"
 
 ```http_server_requests_seconds{ uri="/api/add-repeatable-read", quantile="0.95"}```
 
+### 04 Kafka, KafkaDrop, Grafana
+
+[Monitor the Consumer Lag in Apache Kafka](https://www.baeldung.com/java-kafka-consumer-lag)
+
+[Manually Incrementing or Decrementing a Gauge](https://micrometer.io/docs/concepts#_manually_incrementing_or_decrementing_a_gauge)
+
+```
+histogram_quantile(0.95, sum(rate( http_server_requests_seconds_bucket{ status!~"5..", uri="/api/add-over-kafka"} [10s])) by(le))
+
+http_server_requests_seconds{ uri="/api/add-repeatable-read", quantile="0.95"}
+```
+
+#### youtube playlist:  [link](https://www.youtube.com/playlist?list=PL2oDefB9RF4FoOXBmj9A_wOvwK5BBHY-0)

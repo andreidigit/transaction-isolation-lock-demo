@@ -1,5 +1,6 @@
 package com.example.isolation.controller;
 
+import com.example.isolation.service.BuddyKafkaProducerService;
 import com.example.isolation.service.BuddyService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class BuddyController {
     private final BuddyService buddyService;
+    private final BuddyKafkaProducerService buddyKafkaService;
 
     @PostMapping("/add")
     public ResponseEntity<String> initAddLike(@RequestParam("name") String name, @RequestParam("like") int like) {
@@ -80,6 +82,34 @@ public class BuddyController {
         } catch (Exception e) {
             log.warn("ID: {} - Exception in controller:",Thread.currentThread().getId(), e);
             return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+        }
+    }
+
+    @PostMapping("/add-over-kafka")
+    public ResponseEntity<String> addLikeOverKafka(@RequestParam("name") String name, @RequestParam("like") int like) {
+        try {
+            buddyKafkaService.sendMessage(name, like);
+            return new ResponseEntity<>("Like message sent.", HttpStatus.ACCEPTED);
+        } catch (Exception e) {
+            log.warn("ID: {} - Exception in controller:",Thread.currentThread().getId(), e);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+        }
+    }
+
+    @PostMapping("/add-pessimistic-over-kafka")
+    public ResponseEntity<String> initAddLikePessimisticOverKafka(@RequestParam("name") String name, @RequestParam("like") int like) {
+        try {
+            buddyService.addLikeToBuddyPessimistic(name, like);
+            return new ResponseEntity<>("Like successfully added.", HttpStatus.ACCEPTED);
+        } catch (Exception e) {
+            log.warn("ID: {} - Exception in controller:",Thread.currentThread().getId(), e);
+            try {
+                buddyKafkaService.sendMessage(name, like);
+                return new ResponseEntity<>("Like successfully added.", HttpStatus.ACCEPTED);
+            } catch (Exception exception) {
+                log.warn("ID: {} - Exception in controller:",Thread.currentThread().getId(), e);
+                return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+            }
         }
     }
 }

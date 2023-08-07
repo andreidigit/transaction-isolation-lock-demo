@@ -1,5 +1,10 @@
 version: '3.7'
 
+networks:
+  kafka-net:
+    name: kafka-net
+    driver: bridge
+
 services:
   postgres-13:
     image: postgres:13.6-alpine3.15
@@ -29,3 +34,44 @@ services:
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
       - GF_AUTH_DISABLE_LOGIN_FORM=true
+
+  zookeeper-1:
+    image: zookeeper:3.7.0
+    container_name: zookeeper-1-isolation
+    restart: "no"
+    networks:
+      - kafka-net
+    ports:
+      - "2181:2181"
+
+  kafka-1:
+    image: obsidiandynamics/kafka
+    container_name: kafka-1-isolation
+    restart: "no"
+    networks:
+      - kafka-net
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper-1:2181"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: DOCKER_INTERNAL:PLAINTEXT,DOCKER_EXTERNAL:PLAINTEXT
+      KAFKA_LISTENERS: DOCKER_INTERNAL://:29092,DOCKER_EXTERNAL://:9092
+      KAFKA_ADVERTISED_LISTENERS: DOCKER_INTERNAL://kafka-1:29092,DOCKER_EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: DOCKER_INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper-1
+
+  kafdrop:
+    image: obsidiandynamics/kafdrop:3.31.0
+    container_name: kafdrop-isolation
+    restart: "no"
+    networks:
+      - kafka-net
+    ports:
+      - "9000:9000"
+    environment:
+      KAFKA_BROKERCONNECT: "kafka-1:29092"
+    depends_on:
+      - kafka-1
